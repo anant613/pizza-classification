@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader
 from data import train_transform, test_transform, simple_transform, train_transform_trivial
 from datasets import ImageFolderCustom, train_dir ,test_dir
 from torchvision import datasets
+from models.model3 import ImprovedCNN
 from models.tinyVGG import TinyVGG
 from config import class_names
 #import torchinfo
@@ -15,6 +16,8 @@ from timeit import default_timer as timer
 import matplotlib.pyplot as plt
 from typing import Dict, List
 import pandas as pd
+
+
 
 # Device agnostic code
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -318,3 +321,32 @@ plt.xlabel("epochs")
 plt.legend()
 plt.show()
 
+
+
+
+
+
+
+
+### model 3
+model_2 = ImprovedCNN(output_shape=len(class_names)).to(device)
+optimizer_2 = torch.optim.Adam(model_2.parameters(), lr=0.001, weight_decay=0.01)
+
+start_time = timer()
+
+model_2_results = train(
+    model=model_2,
+    train_dataloader=train_dataloader_simple,
+    test_dataloader=test_dataloader_simple,
+    optimizer=optimizer_2,
+    loss_fn=loss_fn,
+    epochs=10
+)
+
+end_time = timer()
+print(f"Model 2 Training time : {end_time - start_time:.3f} Seconds")
+
+plot_loss_curves(model_2_results)
+
+model_2_df = pd.DataFrame(model_2_results)
+epochs_model_2 = range(len(model_2_df))
