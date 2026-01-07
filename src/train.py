@@ -103,8 +103,15 @@ model_0 = TinyVGG(input_shape=3,
                   hidden_units=10,
                   output_shape=len(class_names)).to(device)
 
-# Create model_1 directly here
+# Create model_1 with data augmentation
 train_data_augmented = datasets.ImageFolder(root=train_dir, transform=train_transform_trivial)
+train_dataloader_augmented = DataLoader(
+    dataset=train_data_augmented,
+    batch_size=BATCH_SIZE,
+    num_workers=0,
+    shuffle=True
+)
+
 model_1 = TinyVGG(input_shape=3,
                   hidden_units=10,
                   output_shape=len(train_data_augmented.classes)).to(device)
@@ -272,7 +279,7 @@ start_time = timer()
 
 model_1_results = train(
     model=model_1,
-    train_dataloader=train_dataloader_simple,
+    train_dataloader=train_dataloader_augmented,
     test_dataloader=test_dataloader_simple,
     optimizer=optimizer,
     loss_fn=loss_fn,
@@ -312,6 +319,51 @@ plt.plot(epochs_model_1, model_1_df["train_acc"], color="orange", label="model 1
 plt.title("train_acc")
 plt.xlabel("epochs")
 plt.legend()
+
+plt.subplot(2, 2, 4)
+plt.plot(epochs_model_0, model_0_df["test_acc"], color="purple", label="model 0")
+plt.plot(epochs_model_1, model_1_df["test_acc"], color="blue", label="model 1")
+plt.title("test_acc")
+plt.xlabel("epochs")
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+# Train ImprovedCNN (model_2)
+torch.manual_seed(42)
+torch.cuda.manual_seed(42)
+
+model_2 = ImprovedCNN(input_shape=3, hidden_units=64, output_shape=len(class_names)).to(device)
+
+loss_fn = nn.CrossEntropyLoss()
+optimizer = torch.optim.AdamW(model_2.parameters(), lr=0.001)
+
+start_time = timer()
+model_2_results = train(
+    model=model_2,
+    train_dataloader=train_dataloader_simple,
+    test_dataloader=test_dataloader_simple,
+    optimizer=optimizer,
+    loss_fn=loss_fn,
+    epochs=10
+)
+end_time = timer()
+print(f"ImprovedCNN training time: {end_time - start_time:.3f} Seconds")
+
+# Save the best model (ImprovedCNN)
+model_save_path = "models"
+os.makedirs(model_save_path, exist_ok=True)
+
+# Save ImprovedCNN as the best model
+torch.save(model_2.state_dict(), os.path.join(model_save_path, "best_model.pth"))
+print(f"Best model saved to {model_save_path}/best_model.pth")
+
+# Also save to backend directory
+backend_model_path = os.path.join("..", "backend", "models")
+os.makedirs(backend_model_path, exist_ok=True)
+torch.save(model_2.state_dict(), os.path.join(backend_model_path, "best_model.pth"))
+print(f"Model also saved to {backend_model_path}/best_model.pth")
 
 plt.subplot(2, 2, 4)
 plt.plot(epochs_model_0, model_0_df["test_acc"], label="model 0")
