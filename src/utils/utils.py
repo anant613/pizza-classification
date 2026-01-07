@@ -3,6 +3,7 @@ import torch.nn as nn
 import torchvision
 import matplotlib.pyplot as plt
 from typing import List
+from PIL import Image
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -39,7 +40,32 @@ def pred_and_plot_image(
  if classNames:
    title = f"Pred: {classNames[target_image_pred_labels]}"
  else:
-   title
+   title = "Prediction"
 
  plt.title(title)
  plt.axis(False)
+
+def predict_image(model, image, transform, class_names, device="cpu"):
+    """Make prediction on a single PIL image for API use"""
+    model.eval()
+    with torch.no_grad():
+        # Apply transform and add batch dimension
+        image_tensor = transform(image).unsqueeze(0).to(device)
+        
+        # Get prediction
+        outputs = model(image_tensor)
+        probabilities = torch.softmax(outputs, dim=1)
+        predicted_class = torch.argmax(probabilities, dim=1).item()
+        confidence = probabilities[0][predicted_class].item()
+        
+        # Get all class probabilities
+        all_probs = {
+            class_names[i]: round(probabilities[0][i].item() * 100, 2)
+            for i in range(len(class_names))
+        }
+        
+        return {
+            "prediction": class_names[predicted_class],
+            "confidence": round(confidence * 100, 2),
+            "probabilities": all_probs
+        }

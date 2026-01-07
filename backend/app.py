@@ -13,6 +13,7 @@ import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 from models.model3 import ImprovedCNN
+from utils.utils import predict_image
 
 app = flask.Flask(__name__)
 CORS(app)
@@ -26,9 +27,7 @@ MODEL_PATH = os.path.join(os.path.dirname(__file__), "models", "best_model.pth")
 
 if os.path.exists(MODEL_PATH):
     model.load_state_dict(torch.load(MODEL_PATH, map_location="cpu"))
-
     print(f"Model loaded from {MODEL_PATH}")
-
 else:
     print(f"Model not found at {MODEL_PATH}")
 model.eval()
@@ -45,22 +44,10 @@ def predict():
     try:
         file = request.files['file']
         image = Image.open(io.BytesIO(file.read())).convert("RGB")
-        image_tensor = transform(image).unsqueeze(0)
-        with torch.no_grad():
-            outputs = model(image_tensor)
-            probabilities = torch.softmax(outputs, dim=1)
-            confidence = probabilities[0][predicted_class].item()
-            predicted_class = torch.argmax(probabilities, dim=1).item()
-
-        return jsonify({
-            "prediction": class_names[predicted_class],
-            "confidence": round(confidence * 100, 2),
-            "probabilities": {
-                class_names[i]: 
-                round(probabilities[0][i].item() * 100, 2)
-                for i in range(len(class_names))}
-        })
-    
+        
+        result = predict_image(model, image, transform, class_names, "cpu")
+        return jsonify(result)
+        
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
