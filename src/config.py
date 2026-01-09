@@ -3,8 +3,8 @@ import torch
 import torch.nn as nn
 import os
 
-class_names = train_data.classes
-class_dict = train_data.class_to_idx
+class_names = ["burger", "pizza", "steak", "sushi"]
+class_dict = {"burger": 0, "pizza": 1, "steak": 2, "sushi": 3}
 
 print(class_names)
 print(class_dict)

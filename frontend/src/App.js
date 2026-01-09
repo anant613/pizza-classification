@@ -38,12 +38,18 @@ function App() {
   };
 
   const getEmoji = (prediction) => {
-    const emojis = { pizza: '🍕', steak: '🥩', sushi: '🍣' };
+    const emojis = { 
+      burger: '🍔',
+      pizza: '🍕', 
+      steak: '🥩', 
+      sushi: '🍣'
+    };
     return emojis[prediction] || '🍽️';
   };
 
   const getCalorieInfo = (prediction) => {
     const calorieData = {
+      burger: { small: 300, large: 600 },
       pizza: { small: 200, large: 400 },
       steak: { small: 250, large: 500 },
       sushi: { small: 150, large: 300 }
@@ -178,7 +184,7 @@ function App() {
               <div className="stat-label">Training Images</div>
             </div>
             <div className="stat-card">
-              <div className="stat-number">3</div>
+              <div className="stat-number">4</div>
               <div className="stat-label">Food Categories</div>
             </div>
             <div className="stat-card">

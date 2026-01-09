@@ -20,7 +20,7 @@ CORS(app)
 model = ImprovedCNN(
     input_shape=3,
     hidden_units=64,
-    output_shape=3
+    output_shape=4
 )
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "models", "best_model.pth")
@@ -37,7 +37,7 @@ transform = transforms.Compose([
     transforms.ToTensor()
 ])
 
-class_names = ["pizza", "steak", "sushi"]
+class_names = ["burger", "pizza", "steak", "sushi"]
 
 @app.route('/predict', methods=['POST'])
 def predict():
